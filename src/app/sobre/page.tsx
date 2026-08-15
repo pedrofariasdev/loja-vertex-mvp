@@ -174,7 +174,18 @@ export default function AboutPage() {
           <p className={`${eyebrowClass} border-white/20 text-white/50`}>
             {a.founderLabel}
           </p>
-          <p className="max-w-md text-sm italic text-white/60">{a.founderNote}</p>
+          <p className="font-serif text-xl font-bold leading-snug text-white md:text-2xl">
+            {a.founderIntro}
+          </p>
+          <div className="mt-6 max-w-md space-y-4 text-sm text-white/70">
+            {a.founderBody.map((paragraph) => (
+              <p key={paragraph}>{paragraph}</p>
+            ))}
+          </div>
+          <p className="mt-6 text-sm font-semibold uppercase tracking-[0.15em] text-white">
+            {a.founderQuote}
+          </p>
+          <p className="mt-2 text-sm text-white/60">{a.founderSignature}</p>
         </div>
       </section>
     </div>

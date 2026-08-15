@@ -141,7 +141,10 @@ export type Dictionary = {
     minimalBody: string;
     minimalBold: string;
     founderLabel: string;
-    founderNote: string;
+    founderIntro: string;
+    founderBody: string[];
+    founderQuote: string;
+    founderSignature: string;
     closingHeading: string;
     closingBody1: string;
     closingBody2: string;
@@ -322,7 +325,15 @@ export const dictionaries: Record<Locale, Dictionary> = {
         "Não acreditamos em colocar mais apenas para parecer mais. Preferimos formas simples, identidade forte e detalhes que tenham propósito. Preto. Branco. Texturas. Movimento.",
       minimalBold: "Uma estética limpa que deixa a pessoa e o produto falarem.",
       founderLabel: "From the founder",
-      founderNote: "Um espaço assinado para contar a história por trás da marca — em breve.",
+      founderIntro: "A VERTEX nasceu da vontade de construir algo próprio.",
+      founderBody: [
+        "Sou Pedro Farias, fundador da VERTEX, e sempre fui movido pela ideia de criar, aprender e evoluir. Entre tecnologia, treino, família e novos projetos, percebi que a disciplina estava presente em quase tudo que eu queria construir na minha vida.",
+        "Mudar de país, começar novos caminhos e continuar perseguindo objetivos ensinou-me que grandes mudanças raramente acontecem de uma vez. Elas são construídas através de pequenas decisões repetidas todos os dias.",
+        "Foi dessa visão que nasceu a VERTEX. Uma marca criada para quem vive em movimento — entre o treino, a rua, o trabalho, os projetos e a vida real.",
+        "Mais do que roupa, quero construir uma identidade que represente evolução, propósito e a coragem de continuar construindo mesmo quando o resultado ainda não apareceu.",
+      ],
+      founderQuote: "Built by Discipline.",
+      founderSignature: "— Pedro Farias, Founder, VERTEX",
       closingHeading: "This is only the beginning.",
       closingBody1: "A VERTEX ainda está sendo construída. E fazemos questão de não esconder isso.",
       closingBody2:
@@ -503,7 +514,15 @@ export const dictionaries: Record<Locale, Dictionary> = {
         "We don't believe in adding more just to look like more. We prefer simple forms, a strong identity, and details that serve a purpose. Black. White. Texture. Movement.",
       minimalBold: "A clean aesthetic that lets the person and the product speak.",
       founderLabel: "From the founder",
-      founderNote: "A signed space to tell the story behind the brand — coming soon.",
+      founderIntro: "VERTEX was born from the will to build something of my own.",
+      founderBody: [
+        "I'm Pedro Farias, founder of VERTEX, and I've always been driven by the idea of creating, learning, and evolving. Between technology, training, family, and new projects, I realized discipline was present in almost everything I wanted to build in my life.",
+        "Moving to a new country, starting new paths, and continuing to chase goals taught me that big changes rarely happen all at once. They're built through small decisions repeated every day.",
+        "That vision is where VERTEX was born. A brand built for those who live in motion — between training, the street, work, projects, and real life.",
+        "More than clothing, I want to build an identity that represents evolution, purpose, and the courage to keep building even when the results haven't shown up yet.",
+      ],
+      founderQuote: "Built by Discipline.",
+      founderSignature: "— Pedro Farias, Founder, VERTEX",
       closingHeading: "This is only the beginning.",
       closingBody1: "VERTEX is still being built. And we make a point of not hiding that.",
       closingBody2:

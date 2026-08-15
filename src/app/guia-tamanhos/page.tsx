@@ -7,9 +7,6 @@ const tshirtSizes = [
   { size: "L", length: "76.2", width: "56" },
   { size: "XL", length: "78.7", width: "61" },
   { size: "2XL", length: "81.3", width: "66" },
-  { size: "3XL", length: "83.8", width: "71" },
-  { size: "4XL", length: "86.4", width: "76.2" },
-  { size: "5XL", length: "89", width: "81.3" },
 ];
 
 const hoodieSizes = [
