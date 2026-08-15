@@ -31,23 +31,52 @@ async function printfulRequest<T>(
 
   if (!res.ok) {
     const body = await res.text();
-    throw new Error(
-      `Printful API error ${res.status} em ${path}: ${body}`
-    );
+    throw new Error(`Printful API error ${res.status} em ${path}: ${body}`);
   }
 
   const json = await res.json();
   return json.result as T;
 }
 
+/** Resumo de um produto sincronizado, tal como devolvido pela listagem. */
+export type SyncProductSummary = {
+  id: number;
+  external_id: string;
+  name: string;
+  variants: number;
+  synced: number;
+  thumbnail_url: string | null;
+};
+
+/** Uma variante sincronizada. `product.name` traz o nome "canónico" com cor/tamanho. */
+export type SyncVariant = {
+  id: number;
+  sync_product_id: number;
+  name: string;
+  retail_price: string;
+  currency: string;
+  sku: string;
+  product: {
+    variant_id: number;
+    name: string; // ex: "Unisex Organic Cotton T-Shirt | Stanley/Stella STTU169 (Black / S)"
+    image: string;
+  };
+  files: Array<{ type: string; preview_url?: string | null }>;
+};
+
+export type SyncProductDetail = {
+  sync_product: SyncProductSummary;
+  sync_variants: SyncVariant[];
+};
+
 /** Lista os produtos sincronizados na loja Printful ligada a este token. */
 export function listSyncProducts() {
-  return printfulRequest<unknown[]>("/store/products");
+  return printfulRequest<SyncProductSummary[]>("/store/products");
 }
 
 /** Detalhe de um produto sincronizado, incluindo variantes. */
 export function getSyncProduct(id: number | string) {
-  return printfulRequest<unknown>(`/store/products/${id}`);
+  return printfulRequest<SyncProductDetail>(`/store/products/${id}`);
 }
 
 /**

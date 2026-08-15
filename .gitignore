@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# pastas temporarias de ficheiros a apagar (nao commitar)
+_to_delete/
