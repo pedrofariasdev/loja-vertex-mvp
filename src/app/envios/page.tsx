@@ -9,19 +9,24 @@ const blocks: LegalBlock[] = [
   { type: "p", text: "O prazo estimado será apresentado sempre que possível durante o processo de compra." },
 
   { type: "h2", text: "Entrega" },
-  { type: "p", text: "Os prazos variam segundo o destino e o método de envio selecionado." },
+  { type: "p", text: "Portugal e restante União Europeia: entrega estimada entre 5 a 6 dias úteis após o envio." },
+  { type: "p", text: "Outros destinos: entrega estimada entre 5 a 10 dias úteis, dependendo do país." },
   { type: "p", text: "Uma estimativa de entrega será apresentada no checkout sempre que tecnicamente possível." },
 
   { type: "h2", text: "Custos" },
-  { type: "p", text: "Os custos de envio são calculados de acordo com:" },
-  { type: "ul", items: ["Destino", "Produtos", "Quantidade", "Fornecedor/centro de produção", "Modalidade de entrega"] },
-  { type: "p", text: "O valor será apresentado antes da conclusão da encomenda." },
+  { type: "p", text: "Os custos de envio são fixos, por zona de destino, e apresentados no checkout antes da conclusão da encomenda:" },
+  { type: "ul", items: [
+    "Portugal — 4,90 € (grátis em encomendas acima de 50 €)",
+    "Restante União Europeia — 5,90 € (grátis em encomendas acima de 70 €)",
+    "Resto do mundo — 12,90 €",
+  ] },
 
   { type: "h2", text: "Tracking" },
   { type: "p", text: "Quando disponível, o cliente receberá um código de acompanhamento após o envio da encomenda." },
 
   { type: "h2", text: "Encomendas internacionais" },
-  { type: "p", text: "Encomendas enviadas para determinados destinos internacionais poderão estar sujeitas a impostos, taxas alfandegárias ou outros encargos de importação. [A PREENCHER: definir quem suporta estes encargos antes de ativar envios para esses mercados.]" },
+  { type: "p", text: "Para destinos fora da União Europeia, a encomenda poderá estar sujeita a impostos de importação, direitos aduaneiros ou outras taxas cobradas pelas autoridades locais no momento da entrega." },
+  { type: "p", text: "Estes encargos não estão incluídos no valor da encomenda nem no custo de envio, e são da responsabilidade do cliente. A VERTEX não tem controlo sobre o valor destes encargos, que varia consoante o país de destino." },
 
   { type: "h2", text: "Endereço incorreto" },
   { type: "p", text: "O cliente é responsável por confirmar que o endereço indicado no checkout está correto." },

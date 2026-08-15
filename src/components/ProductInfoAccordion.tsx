@@ -4,7 +4,34 @@ import Link from "next/link";
 import { Accordion } from "@/components/Accordion";
 import { useLanguage } from "@/lib/language-context";
 
-export function ProductInfoAccordion() {
+function CompositionContent({ text }: { text: string }) {
+  const lines = text.split("\n").filter((line) => line.trim().length > 0);
+  const intro = lines.filter((line) => !line.trim().startsWith("•"));
+  const bullets = lines
+    .filter((line) => line.trim().startsWith("•"))
+    .map((line) => line.trim().replace(/^•\s*/, ""));
+
+  return (
+    <div className="space-y-3">
+      {intro.map((paragraph) => (
+        <p key={paragraph}>{paragraph}</p>
+      ))}
+      {bullets.length > 0 ? (
+        <ul className="list-disc space-y-1 pl-5 marker:text-vertex-gray">
+          {bullets.map((bullet) => (
+            <li key={bullet}>{bullet}</li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  );
+}
+
+export function ProductInfoAccordion({
+  composition,
+}: {
+  composition?: string | null;
+}) {
   const { t } = useLanguage();
   const p = t.product;
 
@@ -13,7 +40,11 @@ export function ProductInfoAccordion() {
       items={[
         {
           title: p.compositionTitle,
-          content: <p>{p.compositionBody}</p>,
+          content: composition ? (
+            <CompositionContent text={composition} />
+          ) : (
+            <p>{p.compositionBody}</p>
+          ),
         },
         {
           title: p.shippingTitle,

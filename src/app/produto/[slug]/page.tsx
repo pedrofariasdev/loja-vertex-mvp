@@ -19,6 +19,8 @@ type Product = {
   slug: string;
   description: string | null;
   image_url: string | null;
+  composition_pt: string | null;
+  composition_en: string | null;
   product_variants: ProductVariant[];
 };
 
@@ -27,7 +29,7 @@ async function getProduct(slug: string): Promise<Product | null> {
   const { data, error } = await supabase
     .from("products")
     .select(
-      "id, name, slug, description, image_url, product_variants(id, price_cents, currency, image_url, size, color, in_stock)"
+      "id, name, slug, description, image_url, composition_pt, composition_en, product_variants(id, price_cents, currency, image_url, size, color, in_stock)"
     )
     .eq("slug", slug)
     .eq("active", true)

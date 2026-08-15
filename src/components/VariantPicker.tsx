@@ -21,6 +21,8 @@ type Product = {
   name: string;
   description: string | null;
   image_url: string | null;
+  composition_pt?: string | null;
+  composition_en?: string | null;
   product_variants: ProductVariant[];
 };
 
@@ -32,7 +34,7 @@ function formatPrice(cents: number, currency: string) {
 }
 
 export function VariantPicker({ product }: { product: Product }) {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const variants = product.product_variants ?? [];
 
   const colors = useMemo(
@@ -170,7 +172,14 @@ export function VariantPicker({ product }: { product: Product }) {
         </button>
 
         <div className="mt-6">
-          <ProductInfoAccordion />
+          <ProductInfoAccordion
+            composition={
+              (locale === "en" ? product.composition_en : product.composition_pt) ??
+              product.composition_pt ??
+              product.composition_en ??
+              null
+            }
+          />
         </div>
       </div>
     </div>
