@@ -1,4 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Guia de Tamanhos",
+  description:
+    "Tabela de tamanhos VERTEX para t-shirts, hoodies, joggers, calções e boné — encontra o teu tamanho ideal.",
+  alternates: { canonical: "/guia-tamanhos" },
+};
 
 const tshirtSizes = [
   { size: "XS", length: "68.6", width: "42" },

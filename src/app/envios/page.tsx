@@ -1,4 +1,12 @@
+import type { Metadata } from "next";
 import { LegalBlocks, type LegalBlock } from "@/components/LegalBlocks";
+
+export const metadata: Metadata = {
+  title: "Envios & Entregas",
+  description:
+    "Prazos de entrega, transportadoras e política de envios da VERTEX para Portugal e Europa.",
+  alternates: { canonical: "/envios" },
+};
 
 const blocks: LegalBlock[] = [
   { type: "p", text: "Produzido para si. Enviado para onde estiver." },

@@ -1,4 +1,12 @@
+import type { Metadata } from "next";
 import { LegalBlocks, type LegalBlock } from "@/components/LegalBlocks";
+
+export const metadata: Metadata = {
+  title: "Trocas & Devoluções",
+  description:
+    "Como trocar ou devolver uma encomenda VERTEX — prazos, condições e direito de livre resolução.",
+  alternates: { canonical: "/devolucoes" },
+};
 
 const blocks: LegalBlock[] = [
   { type: "p", text: "Built to be worn. Supported when something goes wrong." },

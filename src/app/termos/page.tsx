@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
 import { LegalBlocks, type LegalBlock } from "@/components/LegalBlocks";
+
+export const metadata: Metadata = {
+  title: "Termos & Condições",
+  description: "Termos e condições de utilização e compra na loja online VERTEX.",
+  alternates: { canonical: "/termos" },
+};
 
 const blocks: LegalBlock[] = [
   { type: "p", text: "Bem-vindo à VERTEX. Ao utilizar este website ou efetuar uma compra na VERTEX, o utilizador concorda com os presentes Termos & Condições." },

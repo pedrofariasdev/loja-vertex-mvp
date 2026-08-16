@@ -1,7 +1,9 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createPublicServerClient } from "@/lib/supabase/public";
 import { VariantPicker } from "@/components/VariantPicker";
 import { RelatedProducts } from "@/components/RelatedProducts";
+import { absoluteUrl, SITE_NAME } from "@/lib/seo";
 
 type ProductVariant = {
   id: string;
@@ -62,6 +64,41 @@ async function getRelatedProducts(excludeId: string) {
   return data ?? [];
 }
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const product = await getProduct(slug);
+  if (!product) return {};
+
+  const description =
+    product.description ??
+    `${product.name} — disponível na VERTEX. Envio para Portugal e Europa.`;
+  const image = product.image_url ?? product.product_gallery_images[0]?.image_url;
+  const url = `/produto/${product.slug}`;
+
+  return {
+    title: product.name,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      type: "website",
+      title: product.name,
+      description,
+      url,
+      images: image ? [image] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: product.name,
+      description,
+      images: image ? [image] : undefined,
+    },
+  };
+}
+
 export default async function ProductPage({
   params,
 }: {
@@ -72,8 +109,45 @@ export default async function ProductPage({
   if (!product) notFound();
   const related = await getRelatedProducts(product.id);
 
+  const inStockVariants = product.product_variants.filter((v) => v.in_stock);
+  const prices = product.product_variants.map((v) => v.price_cents / 100);
+  const lowPrice = prices.length ? Math.min(...prices) : undefined;
+  const highPrice = prices.length ? Math.max(...prices) : undefined;
+  const currency = product.product_variants[0]?.currency ?? "EUR";
+  const galleryImages = [
+    product.image_url,
+    ...product.product_gallery_images.map((g) => g.image_url),
+  ].filter((url): url is string => !!url);
+
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description: product.description ?? undefined,
+    image: galleryImages,
+    brand: { "@type": "Brand", name: SITE_NAME },
+    url: absoluteUrl(`/produto/${product.slug}`),
+    offers: {
+      "@type": "AggregateOffer",
+      priceCurrency: currency,
+      lowPrice,
+      highPrice,
+      offerCount: product.product_variants.length,
+      availability:
+        inStockVariants.length > 0
+          ? "https://schema.org/InStock"
+          : "https://schema.org/OutOfStock",
+      url: absoluteUrl(`/produto/${product.slug}`),
+    },
+  };
+
   return (
     <main className="mx-auto max-w-6xl px-6 py-16 md:py-24">
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+      />
       <VariantPicker product={product} />
       <RelatedProducts products={related} />
     </main>

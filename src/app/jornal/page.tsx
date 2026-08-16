@@ -1,6 +1,20 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { journalPosts } from "@/lib/journal";
+
+export const metadata: Metadata = {
+  title: "Jornal",
+  description:
+    "Bastidores, decisões e histórias por trás da VERTEX — à medida que a marca vai sendo construída.",
+  alternates: { canonical: "/jornal" },
+  openGraph: {
+    title: "Jornal | VERTEX",
+    description:
+      "Bastidores, decisões e histórias por trás da VERTEX — à medida que a marca vai sendo construída.",
+    url: "/jornal",
+  },
+};
 
 export default function JornalPage() {
   return (

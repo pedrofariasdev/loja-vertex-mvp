@@ -1,4 +1,12 @@
+import type { Metadata } from "next";
 import { LegalBlocks, type LegalBlock } from "@/components/LegalBlocks";
+
+export const metadata: Metadata = {
+  title: "Política de Privacidade",
+  description:
+    "Como a VERTEX recolhe, usa e protege os teus dados pessoais, em conformidade com o RGPD.",
+  alternates: { canonical: "/privacidade" },
+};
 
 const blocks: LegalBlock[] = [
   { type: "p", text: "A VERTEX respeita a privacidade dos seus clientes e visitantes." },

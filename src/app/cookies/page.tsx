@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
 import { LegalBlocks, type LegalBlock } from "@/components/LegalBlocks";
+
+export const metadata: Metadata = {
+  title: "Política de Cookies",
+  description: "Como a VERTEX usa cookies no site e como podes geri-los.",
+  alternates: { canonical: "/cookies" },
+};
 
 const blocks: LegalBlock[] = [
   { type: "p", text: "A VERTEX utiliza cookies e tecnologias semelhantes para garantir o funcionamento da loja, guardar preferências e compreender a utilização do website." },
