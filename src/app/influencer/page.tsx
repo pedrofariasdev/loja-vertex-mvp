@@ -165,7 +165,6 @@ function StatusPanel() {
       }
       setRedeemCode(data.discountCode);
       setRedeemStatus("done");
-      setBalance((prev) => (prev ? { ...prev, pointsCents: 0 } : prev));
     } catch {
       setRedeemError(t.influencer.redeemError);
       setRedeemStatus("error");
@@ -245,6 +244,9 @@ function StatusPanel() {
               </button>
               <p className="mt-2 text-xs text-vertex-gray">
                 {t.influencer.redeemMinNote}
+              </p>
+              <p className="mt-2 text-xs text-vertex-gray">
+                {t.influencer.redeemRulesNote}
               </p>
               {redeemStatus === "error" && (
                 <p className="mt-2 text-xs text-red-600">{redeemError}</p>

@@ -69,14 +69,16 @@ export async function POST(request: NextRequest) {
   // qual foi — `total_details.breakdown.discounts` só vem preenchido pedindo
   // expand explicitamente; a sessão do próprio evento do webhook não o traz.
   let usedPromotionCodeId: string | null = null;
+  let discountAmountCents = 0;
   try {
     const sessionWithDiscounts = await stripe.checkout.sessions.retrieve(
       session.id,
       { expand: ["total_details.breakdown.discounts"] }
     );
-    const discounts = (
+    const totalDetails = (
       sessionWithDiscounts as unknown as {
         total_details?: {
+          amount_discount?: number | null;
           breakdown?: {
             discounts?: Array<{
               discount?: { promotion_code?: string | null };
@@ -84,8 +86,10 @@ export async function POST(request: NextRequest) {
           };
         };
       }
-    ).total_details?.breakdown?.discounts;
-    usedPromotionCodeId = discounts?.[0]?.discount?.promotion_code ?? null;
+    ).total_details;
+    usedPromotionCodeId =
+      totalDetails?.breakdown?.discounts?.[0]?.discount?.promotion_code ?? null;
+    discountAmountCents = totalDetails?.amount_discount ?? 0;
   } catch (err) {
     console.error("Não consegui verificar o código promocional da sessão:", err);
   }
@@ -210,8 +214,9 @@ export async function POST(request: NextRequest) {
       .eq("id", orderId);
   }
 
-  // Credita pontos à influencer, se a encomenda usou o código dela.
-  // Pontos = 10% do subtotal dos produtos (antes de portes), 1 ponto = 1 cêntimo.
+  // Credita pontos à influencer, se a encomenda usou o código de venda dela
+  // (o código de 15% que ela partilha). Pontos = 10% do subtotal dos
+  // produtos (antes de portes), 1 ponto = 1 cêntimo.
   if (usedPromotionCodeId) {
     try {
       const { data: influencer } = await supabase
@@ -253,6 +258,75 @@ export async function POST(request: NextRequest) {
       }
     } catch (err) {
       console.error("Erro ao creditar pontos de influencer:", err);
+    }
+  }
+
+  // Reconcilia um código de RESGATE de pontos (gerado em /api/influencers/redeem),
+  // caso tenha sido esse o código usado nesta encomenda. Só descontamos do
+  // saldo real o valor efetivamente aplicado ao pedido (a Stripe já limita o
+  // desconto ao subtotal dos produtos, nunca aos portes) — se a compra for
+  // mais barata do que o código, a diferença fica automaticamente no saldo.
+  // Só é debitado saldo se o email do checkout for o mesmo da candidatura;
+  // caso contrário, o saldo dela fica protegido e o resgate é assinalado
+  // para revisão manual.
+  if (usedPromotionCodeId) {
+    try {
+      const { data: redemption } = await supabase
+        .from("influencer_redemptions")
+        .select("id, influencer_id, points_redeemed_cents")
+        .eq("stripe_promotion_code_id", usedPromotionCodeId)
+        .eq("status", "pending")
+        .maybeSingle();
+
+      if (redemption) {
+        const actualDiscountCents = Math.min(
+          discountAmountCents,
+          redemption.points_redeemed_cents
+        );
+        const checkoutEmail = (session.customer_details?.email ?? "")
+          .trim()
+          .toLowerCase();
+
+        const { data: influencer } = await supabase
+          .from("influencers")
+          .select("id, email, points_cents")
+          .eq("id", redemption.influencer_id)
+          .maybeSingle();
+
+        if (influencer) {
+          const emailMatches = checkoutEmail === influencer.email.toLowerCase();
+
+          if (emailMatches) {
+            const newBalanceCents = Math.max(
+              0,
+              influencer.points_cents - actualDiscountCents
+            );
+            await supabase
+              .from("influencers")
+              .update({
+                points_cents: newBalanceCents,
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", influencer.id);
+          } else {
+            console.error(
+              "Resgate de influencer usado com email diferente da candidatura:",
+              { redemptionId: redemption.id, checkoutEmail }
+            );
+          }
+
+          await supabase
+            .from("influencer_redemptions")
+            .update({
+              status: emailMatches ? "used" : "email_mismatch",
+              actual_discount_cents: actualDiscountCents,
+              used_email: checkoutEmail || null,
+            })
+            .eq("id", redemption.id);
+        }
+      }
+    } catch (err) {
+      console.error("Erro ao reconciliar resgate de influencer:", err);
     }
   }
 

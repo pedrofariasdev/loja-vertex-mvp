@@ -204,6 +204,7 @@ export type Dictionary = {
     statusSalesLabel: string;
     redeemButton: string;
     redeemMinNote: string;
+    redeemRulesNote: string;
     redeemSuccessTitle: string;
     redeemSuccessBody: string;
     redeemError: string;
@@ -437,8 +438,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
       statusSalesLabel: "Total vendido através do teu código",
       redeemButton: "Resgatar pontos por um código de desconto",
       redeemMinNote: "Precisas de pelo menos 5€ em pontos para resgatar.",
+      redeemRulesNote:
+        "Regras: o código é pessoal e só é válido se fizeres o checkout com o mesmo email desta candidatura. O desconto aplica-se só ao valor dos produtos, nunca aos portes. Se gastares menos do que o valor do código, a diferença volta automaticamente para o teu saldo — não perdes nada.",
       redeemSuccessTitle: "Código gerado!",
-      redeemSuccessBody: "Usa este código de desconto — é de uso único, no valor exato do teu saldo.",
+      redeemSuccessBody:
+        "Usa este código de desconto no checkout, com o mesmo email desta candidatura — é de uso único, com o valor máximo do teu saldo atual. Se o carrinho for mais barato, a diferença fica guardada no teu saldo para a próxima compra.",
       redeemError: "Não foi possível concluir o resgate. Tenta outra vez.",
     },
   },
@@ -668,8 +672,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
       statusSalesLabel: "Total sold through your code",
       redeemButton: "Redeem points for a discount code",
       redeemMinNote: "You need at least €5 in points to redeem.",
+      redeemRulesNote:
+        "Rules: the code is personal and only works if you check out with the same email as this application. The discount applies only to product value, never to shipping. If you spend less than the code's value, the difference is automatically saved back to your balance — you don't lose anything.",
       redeemSuccessTitle: "Code generated!",
-      redeemSuccessBody: "Use this discount code — it's single-use, for the exact value of your balance.",
+      redeemSuccessBody:
+        "Use this discount code at checkout, with the same email as this application — it's single-use, for up to your current balance. If your cart is cheaper, the difference stays in your balance for next time.",
       redeemError: "Couldn't complete the redemption. Please try again.",
     },
   },
