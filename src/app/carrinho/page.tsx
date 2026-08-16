@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/lib/cart-context";
@@ -16,6 +17,31 @@ export default function CartPage() {
   const { items, updateQuantity, removeItem, totalCents } = useCart();
   const { t } = useLanguage();
   const currency = items[0]?.currency ?? "EUR";
+  const [loading, setLoading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState(false);
+
+  async function handleCheckout() {
+    setLoading(true);
+    setCheckoutError(false);
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: items.map((i) => ({
+            variantId: i.variantId,
+            quantity: i.quantity,
+          })),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.url) throw new Error(data.error ?? "Erro");
+      window.location.href = data.url;
+    } catch {
+      setCheckoutError(true);
+      setLoading(false);
+    }
+  }
 
   if (items.length === 0) {
     return (
@@ -106,12 +132,17 @@ export default function CartPage() {
       </div>
 
       <button
-        disabled
-        title="Checkout com Stripe — próximo passo"
-        className="mt-6 w-full border border-vertex-black bg-vertex-black px-6 py-3 text-xs font-medium uppercase tracking-widest text-white opacity-50"
+        onClick={handleCheckout}
+        disabled={loading}
+        className="mt-6 w-full border border-vertex-black bg-vertex-black px-6 py-3 text-xs font-medium uppercase tracking-widest text-white transition hover:bg-vertex-gray hover:border-vertex-gray disabled:opacity-50"
       >
-        {t.cart.checkout}
+        {loading ? t.cart.checkoutLoading : t.cart.checkout}
       </button>
+      {checkoutError ? (
+        <p className="mt-3 text-center text-xs text-red-600">
+          {t.cart.checkoutError}
+        </p>
+      ) : null}
     </main>
   );
 }

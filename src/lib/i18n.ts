@@ -95,7 +95,15 @@ export type Dictionary = {
     backToStore: string;
     total: string;
     checkout: string;
+    checkoutLoading: string;
+    checkoutError: string;
     remove: string;
+  };
+  checkoutSuccess: {
+    title: string;
+    body: string;
+    orderNote: string;
+    backToStore: string;
   };
   product: {
     color: string;
@@ -266,8 +274,16 @@ export const dictionaries: Record<Locale, Dictionary> = {
       empty: "O teu carrinho está vazio.",
       backToStore: "Voltar à loja",
       total: "Total",
-      checkout: "Finalizar compra (em breve)",
+      checkout: "Finalizar compra",
+      checkoutLoading: "A processar...",
+      checkoutError: "Não foi possível iniciar o pagamento. Tenta novamente.",
       remove: "remover",
+    },
+    checkoutSuccess: {
+      title: "Encomenda confirmada",
+      body: "Obrigado pela tua compra! Recebemos o teu pagamento e a tua encomenda já está a ser preparada.",
+      orderNote: "Vais receber um email de confirmação com os detalhes da encomenda em breve.",
+      backToStore: "Voltar à loja",
     },
     product: {
       color: "Cor",
@@ -455,8 +471,16 @@ export const dictionaries: Record<Locale, Dictionary> = {
       empty: "Your cart is empty.",
       backToStore: "Back to store",
       total: "Total",
-      checkout: "Checkout (coming soon)",
+      checkout: "Checkout",
+      checkoutLoading: "Processing...",
+      checkoutError: "Couldn't start checkout. Please try again.",
       remove: "remove",
+    },
+    checkoutSuccess: {
+      title: "Order confirmed",
+      body: "Thank you for your purchase! We've received your payment and your order is being prepared.",
+      orderNote: "You'll receive a confirmation email with your order details shortly.",
+      backToStore: "Back to store",
     },
     product: {
       color: "Color",
