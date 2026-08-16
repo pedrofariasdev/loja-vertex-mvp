@@ -3,6 +3,7 @@ import type Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
 import { createServiceClient } from "@/lib/supabase/server";
 import { createOrder as createPrintfulOrder } from "@/lib/printful";
+import { sendOrderConfirmationEmail } from "@/lib/email";
 
 /**
  * Webhook da Stripe. Escuta `checkout.session.completed`:
@@ -98,16 +99,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ received: true });
   }
 
+  // Itens da encomenda com detalhes de produto/variante — usados quer para
+  // criar a encomenda na Printful, quer para o email de confirmação abaixo.
+  const { data: orderItems, error: itemsError } = await supabase
+    .from("order_items")
+    .select(
+      "quantity, unit_price_cents, product_variants(printful_variant_id, size, color, products(name))"
+    )
+    .eq("order_id", orderId);
+
+  if (itemsError || !orderItems || orderItems.length === 0) {
+    console.error("Não encontrei os itens da encomenda:", orderId, itemsError);
+  }
+
   // Cria a encomenda de produção na Printful, como rascunho para revisão manual.
   try {
-    const { data: orderItems, error: itemsError } = await supabase
-      .from("order_items")
-      .select(
-        "quantity, unit_price_cents, product_variants(printful_variant_id)"
-      )
-      .eq("order_id", orderId);
-
-    if (itemsError || !orderItems || orderItems.length === 0 || !address) {
+    if (!orderItems || orderItems.length === 0 || !address) {
       throw new Error(
         `Faltam itens/morada para criar a encomenda na Printful (${itemsError?.message ?? "sem itens"}).`
       );
@@ -173,6 +180,44 @@ export async function POST(request: NextRequest) {
         updated_at: new Date().toISOString(),
       })
       .eq("id", orderId);
+  }
+
+  // Envia o email de confirmação ao cliente. Não bloqueia nem falha o
+  // webhook — a encomenda já está paga independentemente do email sair.
+  if (order.customer_email && orderItems && orderItems.length > 0) {
+    const emailItems = orderItems.map((item) => {
+      const variant = item.product_variants as unknown as {
+        size: string | null;
+        color: string | null;
+        products: { name: string } | null;
+      } | null;
+      return {
+        productName: variant?.products?.name ?? "VERTEX",
+        variantLabel: [variant?.color, variant?.size].filter(Boolean).join(" / "),
+        quantity: item.quantity,
+        unitPriceCents: item.unit_price_cents,
+      };
+    });
+
+    await sendOrderConfirmationEmail({
+      orderId: order.id,
+      customerEmail: order.customer_email,
+      customerName: order.customer_name,
+      items: emailItems,
+      totalCents: order.total_cents,
+      currency: order.currency,
+      shippingAddress: address
+        ? {
+            line1: address.line1,
+            line2: address.line2,
+            city: address.city,
+            postalCode: address.postal_code,
+            country: address.country,
+          }
+        : null,
+      isGift: order.is_gift,
+      giftMessage: order.gift_message,
+    });
   }
 
   return NextResponse.json({ received: true });
