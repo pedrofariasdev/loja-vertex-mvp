@@ -27,6 +27,17 @@ type OrderItem = {
   currency: string;
 };
 
+type StripeAddress = {
+  city: string | null;
+  country: string | null;
+  line1: string | null;
+  line2: string | null;
+  postal_code: string | null;
+  state: string | null;
+} | null;
+
+type ShippingDetails = { name: string | null; address: StripeAddress } | null;
+
 export async function POST(request: NextRequest) {
   const signature = request.headers.get("stripe-signature");
   const rawBody = await request.text();
@@ -60,10 +71,16 @@ export async function POST(request: NextRequest) {
 
   const supabase = createServiceClient();
 
+  // A morada de entrega vem em `collected_information.shipping_details`
+  // nesta versão da API da Stripe (não é um campo de topo da sessão).
   const shippingDetails =
-    (session as unknown as { shipping_details?: Stripe.Checkout.Session.ShippingDetails })
-      .shipping_details ?? null;
-  const address = shippingDetails?.address ?? session.customer_details?.address;
+    (
+      session as unknown as {
+        collected_information?: { shipping_details?: ShippingDetails };
+      }
+    ).collected_information?.shipping_details ?? null;
+  const address: StripeAddress =
+    shippingDetails?.address ?? session.customer_details?.address ?? null;
 
   const { data: order, error: fetchError } = await supabase
     .from("orders")
