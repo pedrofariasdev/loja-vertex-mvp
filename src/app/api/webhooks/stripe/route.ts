@@ -141,6 +141,7 @@ export async function POST(request: NextRequest) {
         country_code: address.country,
         zip: address.postal_code,
         email: order.customer_email,
+        phone: session.customer_details?.phone ?? undefined,
       },
       items: printfulItems,
       confirm: false,
