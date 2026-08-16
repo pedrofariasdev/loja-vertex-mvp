@@ -2,6 +2,7 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -54,35 +55,49 @@ export function CartProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   }, [items, hydrated]);
 
-  const addItem: CartContextValue["addItem"] = (item, quantity = 1) => {
-    setItems((prev) => {
-      const existing = prev.find((i) => i.variantId === item.variantId);
-      if (existing) {
-        return prev.map((i) =>
-          i.variantId === item.variantId
-            ? { ...i, quantity: i.quantity + quantity }
-            : i
-        );
-      }
-      return [...prev, { ...item, quantity }];
-    });
-  };
+  // Todas as funções abaixo usam a forma funcional de `setItems` e têm
+  // dependências vazias, para que a sua identidade se mantenha estável
+  // entre renders — caso contrário, qualquer componente que as tenha como
+  // dependência de um `useEffect` (ex.: a página de sucesso do checkout, que
+  // chama `clear()` no `useEffect`) entra num ciclo infinito de re-render:
+  // nova função → efeito corre outra vez → novo `setItems([])` → novo
+  // render → nova função → ...
 
-  const removeItem = (variantId: string) => {
+  const addItem: CartContextValue["addItem"] = useCallback(
+    (item, quantity = 1) => {
+      setItems((prev) => {
+        const existing = prev.find((i) => i.variantId === item.variantId);
+        if (existing) {
+          return prev.map((i) =>
+            i.variantId === item.variantId
+              ? { ...i, quantity: i.quantity + quantity }
+              : i
+          );
+        }
+        return [...prev, { ...item, quantity }];
+      });
+    },
+    []
+  );
+
+  const removeItem = useCallback((variantId: string) => {
     setItems((prev) => prev.filter((i) => i.variantId !== variantId));
-  };
+  }, []);
 
-  const updateQuantity = (variantId: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeItem(variantId);
-      return;
-    }
-    setItems((prev) =>
-      prev.map((i) => (i.variantId === variantId ? { ...i, quantity } : i))
-    );
-  };
+  const updateQuantity = useCallback(
+    (variantId: string, quantity: number) => {
+      if (quantity <= 0) {
+        setItems((prev) => prev.filter((i) => i.variantId !== variantId));
+        return;
+      }
+      setItems((prev) =>
+        prev.map((i) => (i.variantId === variantId ? { ...i, quantity } : i))
+      );
+    },
+    []
+  );
 
-  const clear = () => setItems([]);
+  const clear = useCallback(() => setItems([]), []);
 
   const totalCents = useMemo(
     () => items.reduce((sum, i) => sum + i.priceCents * i.quantity, 0),
@@ -93,22 +108,25 @@ export function CartProvider({ children }: { children: ReactNode }) {
     [items]
   );
 
-  return (
-    <CartContext.Provider
-      value={{
-        items,
-        addItem,
-        removeItem,
-        updateQuantity,
-        clear,
-        totalCents,
-        totalItems,
-        hydrated,
-      }}
-    >
-      {children}
-    </CartContext.Provider>
+  // Também memoizamos o próprio objeto de valor do contexto — sem isto, o
+  // Provider passaria um objeto novo a cada render (mesmo com as funções já
+  // estáveis acima) e qualquer componente que dependa dele em `useEffect`
+  // continuaria a re-executar sem necessidade.
+  const value = useMemo<CartContextValue>(
+    () => ({
+      items,
+      addItem,
+      removeItem,
+      updateQuantity,
+      clear,
+      totalCents,
+      totalItems,
+      hydrated,
+    }),
+    [items, addItem, removeItem, updateQuantity, clear, totalCents, totalItems, hydrated]
   );
+
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
 export function useCart() {
