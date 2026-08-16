@@ -150,3 +150,71 @@ export async function sendOrderConfirmationEmail(
     console.error("Erro ao enviar email de confirmação:", err);
   }
 }
+
+export type InfluencerPointsPayload = {
+  influencerEmail: string;
+  influencerName: string;
+  code: string;
+  pointsEarnedCents: number;
+  newBalanceCents: number;
+};
+
+function buildInfluencerPointsHtml(payload: InfluencerPointsPayload): string {
+  return `
+  <div style="background:#f5f5f5;padding:32px 16px;font-family:Helvetica,Arial,sans-serif;">
+    <div style="max-width:520px;margin:0 auto;background:#ffffff;padding:32px;">
+      <p style="letter-spacing:2px;font-size:11px;color:#999;text-transform:uppercase;margin:0 0 24px;">VERTEX — Built by Discipline.</p>
+      <h1 style="font-size:20px;margin:0 0 8px;color:#111;">Ganhaste pontos! 🎉</h1>
+      <p style="font-size:14px;color:#444;line-height:1.6;margin:0 0 24px;">
+        Olá ${escapeHtml(payload.influencerName)}, alguém acabou de comprar na VERTEX usando o teu código <strong>${escapeHtml(payload.code)}</strong>.
+      </p>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:8px;">
+        <tr>
+          <td style="padding:12px 0;border-bottom:1px solid #eee;color:#444;font-size:14px;">Pontos ganhos nesta venda</td>
+          <td style="padding:12px 0;border-bottom:1px solid #eee;text-align:right;color:#111;font-size:14px;font-weight:600;">
+            ${formatPrice(payload.pointsEarnedCents, "EUR")}
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:16px 0 0;font-weight:700;color:#111;font-size:14px;">Saldo atual</td>
+          <td style="padding:16px 0 0;font-weight:700;color:#111;font-size:14px;text-align:right;">
+            ${formatPrice(payload.newBalanceCents, "EUR")}
+          </td>
+        </tr>
+      </table>
+      <p style="font-size:12px;color:#999;margin-top:32px;line-height:1.6;">
+        Consulta o teu saldo e resgata os teus pontos por um código de desconto a qualquer momento em
+        <a href="https://www.vertexwear.site/influencer" style="color:#111;">vertexwear.site/influencer</a>.
+      </p>
+    </div>
+  </div>`;
+}
+
+/**
+ * Avisa a influencer, por email, sempre que uma venda com o código dela é
+ * concluída. Nunca lança — falhas ficam só registadas na consola.
+ */
+export async function sendInfluencerPointsEmail(
+  payload: InfluencerPointsPayload
+): Promise<void> {
+  if (!resend) {
+    console.error(
+      "RESEND_API_KEY não configurado — email de pontos de influencer não enviado."
+    );
+    return;
+  }
+
+  try {
+    const { error } = await resend.emails.send({
+      from: FROM_ADDRESS,
+      to: payload.influencerEmail,
+      subject: "VERTEX — Ganhaste pontos com uma venda!",
+      html: buildInfluencerPointsHtml(payload),
+    });
+    if (error) {
+      console.error("Erro ao enviar email de pontos de influencer:", error);
+    }
+  } catch (err) {
+    console.error("Erro ao enviar email de pontos de influencer:", err);
+  }
+}

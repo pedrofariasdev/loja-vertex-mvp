@@ -3,7 +3,10 @@ import type Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
 import { createServiceClient } from "@/lib/supabase/server";
 import { createOrder as createPrintfulOrder } from "@/lib/printful";
-import { sendOrderConfirmationEmail } from "@/lib/email";
+import {
+  sendInfluencerPointsEmail,
+  sendOrderConfirmationEmail,
+} from "@/lib/email";
 
 /**
  * Webhook da Stripe. Escuta `checkout.session.completed`:
@@ -213,18 +216,19 @@ export async function POST(request: NextRequest) {
     try {
       const { data: influencer } = await supabase
         .from("influencers")
-        .select("id, points_cents, lifetime_sales_cents")
+        .select("id, name, email, code, points_cents, lifetime_sales_cents")
         .eq("stripe_promotion_code_id", usedPromotionCodeId)
         .maybeSingle();
 
       if (influencer) {
         const subtotalCents = session.amount_subtotal ?? 0;
         const pointsEarned = Math.round(subtotalCents * 0.1);
+        const newBalanceCents = influencer.points_cents + pointsEarned;
 
         await supabase
           .from("influencers")
           .update({
-            points_cents: influencer.points_cents + pointsEarned,
+            points_cents: newBalanceCents,
             lifetime_sales_cents:
               influencer.lifetime_sales_cents + subtotalCents,
             updated_at: new Date().toISOString(),
@@ -238,6 +242,14 @@ export async function POST(request: NextRequest) {
             influencer_points_earned_cents: pointsEarned,
           })
           .eq("id", orderId);
+
+        await sendInfluencerPointsEmail({
+          influencerEmail: influencer.email,
+          influencerName: influencer.name,
+          code: influencer.code,
+          pointsEarnedCents: pointsEarned,
+          newBalanceCents,
+        });
       }
     } catch (err) {
       console.error("Erro ao creditar pontos de influencer:", err);
