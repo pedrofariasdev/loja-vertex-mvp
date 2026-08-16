@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useCart } from "@/lib/cart-context";
 import { ProductInfoAccordion } from "@/components/ProductInfoAccordion";
@@ -16,6 +16,11 @@ type ProductVariant = {
   in_stock: boolean;
 };
 
+type GalleryImage = {
+  image_url: string;
+  position: number;
+};
+
 type Product = {
   id: string;
   name: string;
@@ -24,6 +29,7 @@ type Product = {
   composition_pt?: string | null;
   composition_en?: string | null;
   product_variants: ProductVariant[];
+  product_gallery_images?: GalleryImage[];
 };
 
 function formatPrice(cents: number, currency: string) {
@@ -68,7 +74,27 @@ export function VariantPicker({ product }: { product: Product }) {
         (sizes.length === 0 || v.size === selectedSize)
     ) ?? variants[0];
 
-  const image = selectedVariant?.image_url ?? product.image_url;
+  const heroImage = selectedVariant?.image_url ?? product.image_url;
+
+  // A imagem "hero" (por cor, vinda da Printful) vem sempre primeiro; as
+  // fotos extra da galeria (peça sozinha, costas, detalhe) são gerais do
+  // produto, iguais para todas as cores.
+  const allImages = useMemo(() => {
+    const gallery = (product.product_gallery_images ?? [])
+      .slice()
+      .sort((a, b) => a.position - b.position)
+      .map((g) => g.image_url);
+    return [heroImage, ...gallery].filter((url): url is string => !!url);
+  }, [heroImage, product.product_gallery_images]);
+
+  const [activeImage, setActiveImage] = useState<string | null>(
+    allImages[0] ?? null
+  );
+
+  // Ao trocar de cor, a hero muda — volta a mostrar essa como imagem ativa.
+  useEffect(() => {
+    setActiveImage(heroImage ?? null);
+  }, [heroImage]);
 
   function handleAddToCart() {
     if (!selectedVariant) return;
@@ -89,16 +115,42 @@ export function VariantPicker({ product }: { product: Product }) {
 
   return (
     <div className="grid grid-cols-1 gap-10 md:grid-cols-2 md:gap-16">
-      <div className="relative aspect-square w-full overflow-hidden bg-black/5">
-        {image ? (
-          <Image
-            src={image}
-            alt={product.name}
-            fill
-            className="object-cover"
-            unoptimized
-          />
-        ) : null}
+      <div>
+        <div className="relative aspect-square w-full overflow-hidden bg-black/5">
+          {activeImage ? (
+            <Image
+              src={activeImage}
+              alt={product.name}
+              fill
+              className="object-cover"
+              unoptimized
+            />
+          ) : null}
+        </div>
+        {allImages.length > 1 && (
+          <div className="mt-3 flex gap-2">
+            {allImages.map((url, index) => (
+              <button
+                key={`${url}-${index}`}
+                type="button"
+                onClick={() => setActiveImage(url)}
+                className={`relative aspect-square w-16 shrink-0 overflow-hidden bg-black/5 transition ${
+                  activeImage === url
+                    ? "ring-2 ring-vertex-black"
+                    : "opacity-70 hover:opacity-100"
+                }`}
+              >
+                <Image
+                  src={url}
+                  alt=""
+                  fill
+                  className="object-cover"
+                  unoptimized
+                />
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col gap-6">

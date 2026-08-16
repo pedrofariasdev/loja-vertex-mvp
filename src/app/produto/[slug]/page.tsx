@@ -13,6 +13,11 @@ type ProductVariant = {
   in_stock: boolean;
 };
 
+type GalleryImage = {
+  image_url: string;
+  position: number;
+};
+
 type Product = {
   id: string;
   name: string;
@@ -22,6 +27,7 @@ type Product = {
   composition_pt: string | null;
   composition_en: string | null;
   product_variants: ProductVariant[];
+  product_gallery_images: GalleryImage[];
 };
 
 async function getProduct(slug: string): Promise<Product | null> {
@@ -29,10 +35,11 @@ async function getProduct(slug: string): Promise<Product | null> {
   const { data, error } = await supabase
     .from("products")
     .select(
-      "id, name, slug, description, image_url, composition_pt, composition_en, product_variants(id, price_cents, currency, image_url, size, color, in_stock)"
+      "id, name, slug, description, image_url, composition_pt, composition_en, product_variants(id, price_cents, currency, image_url, size, color, in_stock), product_gallery_images(image_url, position)"
     )
     .eq("slug", slug)
     .eq("active", true)
+    .order("position", { foreignTable: "product_gallery_images" })
     .single();
 
   if (error || !data) return null;

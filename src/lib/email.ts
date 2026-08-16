@@ -34,7 +34,7 @@ type OrderEmailAddress = {
 };
 
 export type OrderConfirmationPayload = {
-  orderId: string;
+  orderNumber: number;
   customerEmail: string;
   customerName: string | null;
   items: OrderEmailItem[];
@@ -98,7 +98,7 @@ function buildOrderConfirmationHtml(payload: OrderConfirmationPayload): string {
       <p style="font-size:14px;color:#444;line-height:1.6;margin:0 0 24px;">
         Obrigado pela tua compra! Recebemos o teu pagamento e a tua encomenda já está a ser preparada.
       </p>
-      <p style="font-size:12px;color:#999;margin:0 0 24px;">Nº da encomenda: ${escapeHtml(payload.orderId)}</p>
+      <p style="font-size:12px;color:#999;margin:0 0 24px;letter-spacing:1px;">Nº da encomenda: <strong style="color:#111;">VTX-${payload.orderNumber}</strong></p>
       <table style="width:100%;border-collapse:collapse;margin-bottom:8px;">
         ${itemsHtml}
         <tr>

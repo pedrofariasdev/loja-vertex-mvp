@@ -348,7 +348,7 @@ export async function POST(request: NextRequest) {
     });
 
     await sendOrderConfirmationEmail({
-      orderId: order.id,
+      orderNumber: order.order_number,
       customerEmail: order.customer_email,
       customerName: order.customer_name,
       items: emailItems,
