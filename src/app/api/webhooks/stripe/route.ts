@@ -17,16 +17,6 @@ import { createOrder as createPrintfulOrder } from "@/lib/printful";
  * O "Signing secret" gerado deve ser colocado em STRIPE_WEBHOOK_SECRET.
  */
 
-type OrderItem = {
-  variantId: string;
-  printfulVariantId: string | null;
-  productName: string;
-  variantLabel: string;
-  quantity: number;
-  priceCents: number;
-  currency: string;
-};
-
 type StripeAddress = {
   city: string | null;
   country: string | null;
@@ -82,15 +72,20 @@ export async function POST(request: NextRequest) {
   const address: StripeAddress =
     shippingDetails?.address ?? session.customer_details?.address ?? null;
 
+  const paymentIntentId =
+    typeof session.payment_intent === "string"
+      ? session.payment_intent
+      : session.payment_intent?.id ?? null;
+
   const { data: order, error: fetchError } = await supabase
     .from("orders")
     .update({
       status: "paid",
+      stripe_payment_intent_id: paymentIntentId,
       customer_email: session.customer_details?.email ?? null,
       customer_name:
         shippingDetails?.name ?? session.customer_details?.name ?? null,
       shipping_address: address,
-      shipping_cents: session.total_details?.amount_shipping ?? null,
       total_cents: session.amount_total,
       updated_at: new Date().toISOString(),
     })
@@ -105,10 +100,35 @@ export async function POST(request: NextRequest) {
 
   // Cria a encomenda de produção na Printful, como rascunho para revisão manual.
   try {
-    const items = (order.items as OrderItem[]).filter((i) => i.printfulVariantId);
+    const { data: orderItems, error: itemsError } = await supabase
+      .from("order_items")
+      .select(
+        "quantity, unit_price_cents, product_variants(printful_variant_id)"
+      )
+      .eq("order_id", orderId);
 
-    if (items.length === 0 || !address) {
-      throw new Error("Faltam itens com ID Printful ou morada de entrega.");
+    if (itemsError || !orderItems || orderItems.length === 0 || !address) {
+      throw new Error(
+        `Faltam itens/morada para criar a encomenda na Printful (${itemsError?.message ?? "sem itens"}).`
+      );
+    }
+
+    const printfulItems = orderItems
+      .map((item) => {
+        const variant = item.product_variants as unknown as {
+          printful_variant_id: string | null;
+        } | null;
+        return variant?.printful_variant_id
+          ? {
+              sync_variant_id: Number(variant.printful_variant_id),
+              quantity: item.quantity,
+            }
+          : null;
+      })
+      .filter((i): i is { sync_variant_id: number; quantity: number } => !!i);
+
+    if (printfulItems.length === 0) {
+      throw new Error("Nenhum item tem ID de variante Printful associado.");
     }
 
     const printfulOrder = (await createPrintfulOrder({
@@ -122,10 +142,7 @@ export async function POST(request: NextRequest) {
         zip: address.postal_code,
         email: order.customer_email,
       },
-      items: items.map((i) => ({
-        sync_variant_id: Number(i.printfulVariantId),
-        quantity: i.quantity,
-      })),
+      items: printfulItems,
       confirm: false,
     })) as { id?: number };
 

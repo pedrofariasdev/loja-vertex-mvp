@@ -50,9 +50,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const orderItems: Array<{
+    const lineItems: Array<{
       variantId: string;
-      printfulVariantId: string | null;
       productName: string;
       variantLabel: string;
       quantity: number;
@@ -81,9 +80,8 @@ export async function POST(request: NextRequest) {
         .filter(Boolean)
         .join(" / ");
 
-      orderItems.push({
+      lineItems.push({
         variantId: variant.id,
-        printfulVariantId: variant.printful_variant_id,
         productName,
         variantLabel,
         quantity,
@@ -94,27 +92,44 @@ export async function POST(request: NextRequest) {
       subtotalCents += variant.price_cents * quantity;
     }
 
-    if (orderItems.length === 0) {
+    if (lineItems.length === 0) {
       return NextResponse.json(
         { error: "Não foi possível validar os artigos do carrinho." },
         { status: 400 }
       );
     }
 
-    // Cria a encomenda "pending" já com os dados reais — o webhook só
-    // precisa de a atualizar quando o pagamento for confirmado.
+    // Cria a encomenda "pending" (o total definitivo, com portes, só fica
+    // a saber quando o webhook confirmar o pagamento).
     const { data: order, error: orderError } = await supabase
       .from("orders")
       .insert({
         status: "pending",
-        items: orderItems,
-        subtotal_cents: subtotalCents,
+        total_cents: subtotalCents,
         currency,
       })
       .select("id")
       .single();
 
     if (orderError || !order) {
+      console.error("Erro ao criar a encomenda:", orderError);
+      return NextResponse.json(
+        { error: "Não foi possível criar a encomenda." },
+        { status: 500 }
+      );
+    }
+
+    const { error: itemsError } = await supabase.from("order_items").insert(
+      lineItems.map((item) => ({
+        order_id: order.id,
+        product_variant_id: item.variantId,
+        quantity: item.quantity,
+        unit_price_cents: item.priceCents,
+      }))
+    );
+
+    if (itemsError) {
+      console.error("Erro ao criar os itens da encomenda:", itemsError);
       return NextResponse.json(
         { error: "Não foi possível criar a encomenda." },
         { status: 500 }
@@ -129,7 +144,7 @@ export async function POST(request: NextRequest) {
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
-      line_items: orderItems.map((item) => ({
+      line_items: lineItems.map((item) => ({
         quantity: item.quantity,
         price_data: {
           currency: item.currency.toLowerCase(),
@@ -188,7 +203,7 @@ export async function POST(request: NextRequest) {
 
     await supabase
       .from("orders")
-      .update({ stripe_session_id: session.id })
+      .update({ stripe_checkout_session_id: session.id })
       .eq("id", order.id);
 
     return NextResponse.json({ url: session.url });
