@@ -23,6 +23,11 @@ export async function POST(request: NextRequest) {
     const requestedItems: CheckoutItem[] = Array.isArray(body?.items)
       ? body.items
       : [];
+    const isGift = Boolean(body?.isGift);
+    const giftMessage =
+      isGift && typeof body?.giftMessage === "string"
+        ? body.giftMessage.trim().slice(0, 400)
+        : null;
 
     if (requestedItems.length === 0) {
       return NextResponse.json(
@@ -107,6 +112,8 @@ export async function POST(request: NextRequest) {
         status: "pending",
         total_cents: subtotalCents,
         currency,
+        is_gift: isGift,
+        gift_message: giftMessage,
       })
       .select("id")
       .single();

@@ -145,6 +145,14 @@ export async function POST(request: NextRequest) {
       },
       items: printfulItems,
       confirm: false,
+      ...(order.is_gift && order.gift_message
+        ? {
+            packing_slip: {
+              message: order.gift_message,
+              store_name: "VERTEX",
+            },
+          }
+        : {}),
     })) as { id?: number };
 
     await supabase

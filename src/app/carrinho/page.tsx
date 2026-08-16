@@ -19,6 +19,8 @@ export default function CartPage() {
   const currency = items[0]?.currency ?? "EUR";
   const [loading, setLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState(false);
+  const [isGift, setIsGift] = useState(false);
+  const [giftMessage, setGiftMessage] = useState("");
 
   async function handleCheckout() {
     setLoading(true);
@@ -32,6 +34,8 @@ export default function CartPage() {
             variantId: i.variantId,
             quantity: i.quantity,
           })),
+          isGift,
+          giftMessage: isGift ? giftMessage.trim().slice(0, 400) : "",
         }),
       });
       const data = await res.json();
@@ -122,7 +126,32 @@ export default function CartPage() {
         ))}
       </div>
 
-      <div className="mt-8 flex items-center justify-between">
+      <div className="mt-8 border-t border-vertex-black/10 pt-6">
+        <label className="flex cursor-pointer items-center gap-2 text-sm text-vertex-black">
+          <input
+            type="checkbox"
+            checked={isGift}
+            onChange={(e) => setIsGift(e.target.checked)}
+            className="h-4 w-4 accent-vertex-black"
+          />
+          {t.cart.giftLabel}
+        </label>
+        {isGift ? (
+          <div className="mt-3">
+            <textarea
+              value={giftMessage}
+              onChange={(e) => setGiftMessage(e.target.value)}
+              placeholder={t.cart.giftMessagePlaceholder}
+              maxLength={400}
+              rows={3}
+              className="w-full resize-none border border-vertex-black/20 bg-transparent px-3 py-2 text-sm text-vertex-black placeholder:text-vertex-gray focus:border-vertex-black focus:outline-none"
+            />
+            <p className="mt-1 text-xs text-vertex-gray">{t.cart.giftNote}</p>
+          </div>
+        ) : null}
+      </div>
+
+      <div className="mt-6 flex items-center justify-between">
         <span className="font-serif text-lg font-bold uppercase tracking-tight text-vertex-black">
           {t.cart.total}
         </span>

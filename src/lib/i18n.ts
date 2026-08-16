@@ -98,6 +98,9 @@ export type Dictionary = {
     checkoutLoading: string;
     checkoutError: string;
     remove: string;
+    giftLabel: string;
+    giftMessagePlaceholder: string;
+    giftNote: string;
   };
   checkoutSuccess: {
     title: string;
@@ -278,6 +281,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
       checkoutLoading: "A processar...",
       checkoutError: "Não foi possível iniciar o pagamento. Tenta novamente.",
       remove: "remover",
+      giftLabel: "É para presente?",
+      giftMessagePlaceholder: "Deixa uma mensagem para incluirmos na embalagem (opcional)",
+      giftNote: "A mensagem é impressa na guia de remessa dentro da caixa, sem preços visíveis.",
     },
     checkoutSuccess: {
       title: "Encomenda confirmada",
@@ -475,6 +481,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
       checkoutLoading: "Processing...",
       checkoutError: "Couldn't start checkout. Please try again.",
       remove: "remove",
+      giftLabel: "Is this a gift?",
+      giftMessagePlaceholder: "Leave a message to include with the package (optional)",
+      giftNote: "The message is printed on the packing slip inside the box, with no prices shown.",
     },
     checkoutSuccess: {
       title: "Order confirmed",
