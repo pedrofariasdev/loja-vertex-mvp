@@ -48,6 +48,11 @@ export function SiteFooter() {
                   {t.footer.journal}
                 </Link>
               </li>
+              <li>
+                <Link href="/influencer" className={linkClass}>
+                  {t.footer.influencer}
+                </Link>
+              </li>
             </ul>
           </div>
 

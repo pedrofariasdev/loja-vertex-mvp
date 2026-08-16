@@ -64,6 +64,7 @@ export type Dictionary = {
     complaintsBook: string;
     social: string;
     rights: string;
+    influencer: string;
   };
   search: {
     title: string;
@@ -179,6 +180,34 @@ export type Dictionary = {
     formSuccess: string;
     formError: string;
   };
+  influencer: {
+    heroEyebrow: string;
+    heroTitle: string;
+    heroBody: string;
+    discountPercent: string;
+    signupTitle: string;
+    formName: string;
+    formEmail: string;
+    formCode: string;
+    formCodeHint: string;
+    formSubmit: string;
+    formSubmitting: string;
+    signupSuccessTitle: string;
+    signupSuccessBody: string;
+    formError: string;
+    statusTitle: string;
+    statusBody: string;
+    statusSubmit: string;
+    statusNotFound: string;
+    statusCodeLabel: string;
+    statusPointsLabel: string;
+    statusSalesLabel: string;
+    redeemButton: string;
+    redeemMinNote: string;
+    redeemSuccessTitle: string;
+    redeemSuccessBody: string;
+    redeemError: string;
+  };
 };
 
 export const dictionaries: Record<Locale, Dictionary> = {
@@ -246,6 +275,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       complaintsBook: "Livro de Reclamações",
       social: "Social",
       rights: "VERTEX. Built by Discipline.",
+      influencer: "Torna-te Influencer",
     },
     search: {
       title: "Pesquisar",
@@ -381,6 +411,36 @@ export const dictionaries: Record<Locale, Dictionary> = {
       formSuccess: "Mensagem enviada. Obrigado — vamos responder em breve.",
       formError: "Algo correu mal. Tenta outra vez.",
     },
+    influencer: {
+      heroEyebrow: "Programa de Influencers",
+      heroTitle: "Torna-te Influencer VERTEX",
+      heroBody:
+        "Cria o teu código próprio, partilha com a tua comunidade e ganha pontos por cada venda feita através dele. Sem aprovações demoradas — o desconto é sempre o mesmo para todas as influencers.",
+      discountPercent: "15% de desconto para quem usar o teu código",
+      signupTitle: "Candidata-te",
+      formName: "Nome",
+      formEmail: "Email",
+      formCode: "O teu código (ex.: MARIA)",
+      formCodeHint: "Só letras e números, sem espaços. É o código que vais partilhar.",
+      formSubmit: "Criar o meu código",
+      formSubmitting: "A criar...",
+      signupSuccessTitle: "O teu código está pronto!",
+      signupSuccessBody:
+        "Partilha este código — dá 15% de desconto a quem o usar, e tu ganhas pontos por cada venda.",
+      formError: "Não foi possível concluir a candidatura. Tenta outra vez.",
+      statusTitle: "Já és influencer?",
+      statusBody: "Consulta o teu saldo de pontos com o teu email.",
+      statusSubmit: "Consultar saldo",
+      statusNotFound: "Não encontrámos nenhuma candidatura com este email.",
+      statusCodeLabel: "O teu código",
+      statusPointsLabel: "Pontos disponíveis",
+      statusSalesLabel: "Total vendido através do teu código",
+      redeemButton: "Resgatar pontos por um código de desconto",
+      redeemMinNote: "Precisas de pelo menos 5€ em pontos para resgatar.",
+      redeemSuccessTitle: "Código gerado!",
+      redeemSuccessBody: "Usa este código de desconto — é de uso único, no valor exato do teu saldo.",
+      redeemError: "Não foi possível concluir o resgate. Tenta outra vez.",
+    },
   },
   en: {
     nav: {
@@ -446,6 +506,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       complaintsBook: "Complaints Book",
       social: "Social",
       rights: "VERTEX. Built by Discipline.",
+      influencer: "Become an Influencer",
     },
     search: {
       title: "Search",
@@ -580,6 +641,36 @@ export const dictionaries: Record<Locale, Dictionary> = {
       formSubmitting: "Sending...",
       formSuccess: "Message sent. Thanks — we'll get back to you soon.",
       formError: "Something went wrong. Try again.",
+    },
+    influencer: {
+      heroEyebrow: "Influencer Program",
+      heroTitle: "Become a VERTEX Influencer",
+      heroBody:
+        "Create your own code, share it with your community, and earn points for every sale made through it. No lengthy approvals — the discount is always the same for every influencer.",
+      discountPercent: "15% off for anyone who uses your code",
+      signupTitle: "Apply",
+      formName: "Name",
+      formEmail: "Email",
+      formCode: "Your code (e.g. MARIA)",
+      formCodeHint: "Letters and numbers only, no spaces. This is the code you'll share.",
+      formSubmit: "Create my code",
+      formSubmitting: "Creating...",
+      signupSuccessTitle: "Your code is ready!",
+      signupSuccessBody:
+        "Share this code — it gives 15% off to anyone who uses it, and you earn points for every sale.",
+      formError: "Couldn't complete the application. Please try again.",
+      statusTitle: "Already an influencer?",
+      statusBody: "Check your points balance with your email.",
+      statusSubmit: "Check balance",
+      statusNotFound: "We couldn't find an application with this email.",
+      statusCodeLabel: "Your code",
+      statusPointsLabel: "Points available",
+      statusSalesLabel: "Total sold through your code",
+      redeemButton: "Redeem points for a discount code",
+      redeemMinNote: "You need at least €5 in points to redeem.",
+      redeemSuccessTitle: "Code generated!",
+      redeemSuccessBody: "Use this discount code — it's single-use, for the exact value of your balance.",
+      redeemError: "Couldn't complete the redemption. Please try again.",
     },
   },
 };

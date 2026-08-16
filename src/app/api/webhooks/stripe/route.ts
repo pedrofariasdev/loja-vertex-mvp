@@ -62,6 +62,31 @@ export async function POST(request: NextRequest) {
 
   const supabase = createServiceClient();
 
+  // Se foi usado um código promocional (ex.: de uma influencer), descobrimos
+  // qual foi — `total_details.breakdown.discounts` só vem preenchido pedindo
+  // expand explicitamente; a sessão do próprio evento do webhook não o traz.
+  let usedPromotionCodeId: string | null = null;
+  try {
+    const sessionWithDiscounts = await stripe.checkout.sessions.retrieve(
+      session.id,
+      { expand: ["total_details.breakdown.discounts"] }
+    );
+    const discounts = (
+      sessionWithDiscounts as unknown as {
+        total_details?: {
+          breakdown?: {
+            discounts?: Array<{
+              discount?: { promotion_code?: string | null };
+            }>;
+          };
+        };
+      }
+    ).total_details?.breakdown?.discounts;
+    usedPromotionCodeId = discounts?.[0]?.discount?.promotion_code ?? null;
+  } catch (err) {
+    console.error("Não consegui verificar o código promocional da sessão:", err);
+  }
+
   // A morada de entrega vem em `collected_information.shipping_details`
   // nesta versão da API da Stripe (não é um campo de topo da sessão).
   const shippingDetails =
@@ -180,6 +205,43 @@ export async function POST(request: NextRequest) {
         updated_at: new Date().toISOString(),
       })
       .eq("id", orderId);
+  }
+
+  // Credita pontos à influencer, se a encomenda usou o código dela.
+  // Pontos = 10% do subtotal dos produtos (antes de portes), 1 ponto = 1 cêntimo.
+  if (usedPromotionCodeId) {
+    try {
+      const { data: influencer } = await supabase
+        .from("influencers")
+        .select("id, points_cents, lifetime_sales_cents")
+        .eq("stripe_promotion_code_id", usedPromotionCodeId)
+        .maybeSingle();
+
+      if (influencer) {
+        const subtotalCents = session.amount_subtotal ?? 0;
+        const pointsEarned = Math.round(subtotalCents * 0.1);
+
+        await supabase
+          .from("influencers")
+          .update({
+            points_cents: influencer.points_cents + pointsEarned,
+            lifetime_sales_cents:
+              influencer.lifetime_sales_cents + subtotalCents,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", influencer.id);
+
+        await supabase
+          .from("orders")
+          .update({
+            influencer_id: influencer.id,
+            influencer_points_earned_cents: pointsEarned,
+          })
+          .eq("id", orderId);
+      }
+    } catch (err) {
+      console.error("Erro ao creditar pontos de influencer:", err);
+    }
   }
 
   // Envia o email de confirmação ao cliente. Não bloqueia nem falha o
