@@ -6,13 +6,15 @@ import { useCart } from "@/lib/cart-context";
 import { useLanguage } from "@/lib/language-context";
 
 export default function CheckoutSuccessPage() {
-  const { clear } = useCart();
+  const { clear, hydrated } = useCart();
   const { t } = useLanguage();
 
   useEffect(() => {
-    clear();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    // Só esvaziamos depois do carrinho guardado (localStorage) ter sido
+    // carregado — caso contrário essa carga, que acontece a seguir,
+    // sobrepõe-se ao clear() e o artigo "ressuscita" no carrinho.
+    if (hydrated) clear();
+  }, [hydrated, clear]);
 
   return (
     <main className="mx-auto max-w-xl px-6 py-24 text-center md:py-32">
