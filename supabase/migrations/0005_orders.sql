@@ -7,3 +7,10 @@
 
 alter table orders
   add column if not exists printful_error text;
+
+-- A encomenda é criada como "pending" assim que o cliente clica em
+-- "Finalizar Compra", antes de a Stripe recolher o email/morada — por isso
+-- customer_email não pode ser obrigatório nesse momento. É preenchido a
+-- seguir pelo webhook, quando o pagamento é confirmado.
+alter table orders
+  alter column customer_email drop not null;
