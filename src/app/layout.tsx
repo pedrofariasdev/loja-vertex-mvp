@@ -1,3 +1,4 @@
+import VertexAgentChat from "@/components/vertex-agent-chat";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Roboto_Serif } from "next/font/google";
 import "./globals.css";
@@ -87,6 +88,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <CookieConsent />
           </CartProvider>
         </LanguageProvider>
+        <VertexAgentChat />
       </body>
     </html>
   );
